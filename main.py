@@ -32,7 +32,7 @@ async def main(msg, url):
         log = f'{a} after if'
         logging.info(log)
         logging.info('-'*20)
-        await asyncio.sleep(10)
+        await asyncio.sleep(30)
 
 
 # Приветственное сообщение
