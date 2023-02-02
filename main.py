@@ -1,12 +1,12 @@
 import asyncio
 import logging
+from parser import parser
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 
 from bot_token import token
-from parser import *
 
 storage = MemoryStorage()
 bot = Bot(token=token)
@@ -15,39 +15,27 @@ dp = Dispatcher(bot=bot, storage=storage)
 logging.basicConfig(filename='av_info.log', encoding='utf-8', level=logging.INFO)
 
 
+# Проверяем изменение первых 3-х ссылок. Изменились - оповещаем пользователя
 async def main(msg, url):
-    main_number = 0
-    main_links = []
-    check = parser(url)
-    main_number = check[0]
-    main_links = check[1]
+    main_links = parser(url)
     while True:
         a = parser(url)
-        log = f'{main_number} - {main_links} main all'
-        logging.info(log)
-        if a[0] <= main_number and a[1] in main_links:
-            main_number = a[0]
-            main_links = a[1]
-            log = f'{a[0]} - {a[1]} a if'
-            logging.info(log)
-        if a[0] >= main_number and a[1] not in main_links:
+        logging.info(f'{main_links} main all')
+        if a != main_links:
             msg_all = ''
-            log = f'{a[0]} - {a[1]} a elif'
-            logging.info(log)
+            logging.info(f'{a} a if')
             logging.info('alert')
-            for i, inf in enumerate(a[1]):
+            for i, inf in enumerate(a):
                 msg_all = msg_all + f'{inf}\n{str("<b>─</b>")*25}\n'
             await bot.send_message(msg.from_user.id, msg_all + url, parse_mode='HTML')
-            main_number = a[0]
-            main_links = a[1]
-            msg_all = ''
-        else:
-            log = f'{a[0]} - {a[1]} else'
-            logging.info(log)
+            main_links = a
+        log = f'{a} after if'
+        logging.info(log)
         logging.info('-'*20)
-        await asyncio.sleep(30)
+        await asyncio.sleep(10)
 
 
+# Приветственное сообщение
 @dp.message_handler(commands=['start'])
 async def start_command(msg: types.Message):
     await msg.reply(("Отправь ссылку"))
@@ -55,6 +43,7 @@ async def start_command(msg: types.Message):
     logging.info(msg.from_user.id)
 
 
+# Принимаем ссылку пользователя и вызываем функцию обработки
 @dp.message_handler()
 async def alert_sender(msg: types.Message):
     url = msg.text
