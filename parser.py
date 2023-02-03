@@ -1,16 +1,20 @@
-import time
-
 from bs4 import BeautifulSoup
 import requests
 
 
+# Парсим ссылку, забираем первые 3 результата.
 def parser(url):
+    while True:
+        request = requests.get(url)
+        bs = BeautifulSoup(request.text, "html.parser")
+        links = bs.find_all("a", class_="link-link-MbQDP link-design-default-_nSbv title-root-zZCwT iva-item-title-py3i_ title-listRedesign-_rejR title-root_maxHeight-X6PsH")
 
-    request = requests.get(url)
-    bs = BeautifulSoup(request.text, "html.parser")
-    links = bs.find("span", class_="page-title-count-wQ7pG")
-    number = int(links.get_text().replace("\xa0", ""))
-    links = bs.find_all("a", class_="link-link-MbQDP link-design-default-_nSbv title-root-zZCwT iva-item-title-py3i_ title-listRedesign-_rejR title-root_maxHeight-X6PsH")
+        try:
+            links[0] is None
+            break
+        except IndexError:
+            pass
+
     i = 1
     final_links = []
     for link in links:
@@ -20,4 +24,4 @@ def parser(url):
         else:
             pass
         i += 1
-    return number, final_links
+    return final_links
