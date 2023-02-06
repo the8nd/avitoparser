@@ -5,6 +5,7 @@ from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.utils.markdown import hlink
 
 from bot_token import token
 
@@ -17,19 +18,22 @@ logging.basicConfig(filename='av_info.log', encoding='utf-8', level=logging.INFO
 
 # Проверяем изменение первых 3-х ссылок. Изменились - оповещаем пользователя
 async def main(msg, url):
-    main_links = parser(url)
+    parser_all = await parser(url)
+    main_links = parser_all[0]
     while True:
-        a = parser(url)
+        check = await parser(url)
+        check_links = check[0]
+        check_titles = check[1]
         logging.info(f'{main_links} main all')
-        if a != main_links:
+        if check_links != main_links:
             msg_all = ''
-            logging.info(f'{a} a if')
+            logging.info(f'{check_links} a if')
             logging.info('alert')
-            for i, inf in enumerate(a):
-                msg_all = msg_all + f'{inf}\n{str("<b>─</b>")*25}\n'
-            await bot.send_message(msg.from_user.id, msg_all + url, parse_mode='HTML')
-            main_links = a
-        log = f'{a} after if'
+            for i, inf in enumerate(check_links):
+                msg_all = msg_all + hlink(check_titles[i], inf) + f'\n{str("<b>─</b>")*25}\n'
+            await bot.send_message(msg.from_user.id, msg_all + hlink('Ссылка', url), parse_mode='HTML')
+            main_links = check_links
+        log = f'{check_links} after if'
         logging.info(log)
         logging.info('-'*20)
         await asyncio.sleep(30)
