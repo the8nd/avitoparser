@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from parser import parser
+from avparser import avparser
 from aiogram import Bot, types
 from aiogram.dispatcher import Dispatcher
 from aiogram.utils import executor
@@ -18,10 +18,10 @@ logging.basicConfig(filename='av_info.log', encoding='utf-8', level=logging.INFO
 
 # Проверяем изменение первых 3-х ссылок. Изменились - оповещаем пользователя
 async def main(msg, url):
-    parser_all = await parser(url)
+    parser_all = await avparser(url)
     main_links = parser_all[0]
     while True:
-        check = await parser(url)
+        check = await avparser(url)
         check_links = check[0]
         check_titles = check[1]
         logging.info(f'{main_links} main all')
