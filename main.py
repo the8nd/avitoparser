@@ -82,6 +82,7 @@ async def urls_check():
         loop_url_chekc = db.select(urls_base.columns.user_id, urls_base.columns.url_name, urls_base.columns.url, urls_base.columns.last_urls, urls_base.columns.url_id).where(urls_base.columns.status == True)
         loop_url_chekc_f = connection.execute(loop_url_chekc)
         for j, inf_url in enumerate(loop_url_chekc_f.fetchall()):
+
             loop_parser = await avparser(inf_url[2])
             last_url_unpacked = inf_url[3].split('\m/')
             last_url_unpacked.pop(3)
@@ -99,7 +100,7 @@ async def urls_check():
                 connection.execute(last_links_update)
                 connection.commit()
                 await asyncio.sleep(2)
-        await asyncio.sleep(20)
+        await asyncio.sleep(30)
 
 
 @dp.message_handler(commands=['start'])
@@ -108,9 +109,9 @@ async def start_command(msg: types.Message):
                      "- Удалить URL\n"
                      "- Изменить статус URL\n"
                      "- Отобразить все URL", reply_markup=start_keyboard)
-    loop = await urls_check()
     logging.info(msg.from_user.username)
     logging.info(msg.from_user.id)
+    loop = await urls_check()
 
 
 @dp.message_handler(Text(equals='Добавить', ignore_case=True), state=None)
