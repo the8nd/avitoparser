@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import datetime
 import sqlalchemy as db
 from avparser import avparser
 from keyboards import start_keyboard, cancel_keyboard
@@ -84,9 +85,13 @@ async def urls_check():
         for j, inf_url in enumerate(loop_url_chekc_f.fetchall()):
 
             loop_parser = await avparser(inf_url[2])
-            last_url_unpacked = inf_url[3].split('\m/')
-            last_url_unpacked.pop(3)
+            try:
+                last_url_unpacked = inf_url[3].split('\m/')
+                last_url_unpacked.pop(3)
+            except AttributeError:
+                pass
             if loop_parser[0] != last_url_unpacked:
+                logging.info(f'{inf_url[0]} alert  {datetime.datetime.now()}')
                 msg_to_send = ''
                 for i, inf in enumerate(loop_parser[0]):
                     msg_to_send = msg_to_send + hlink(loop_parser[1][i], inf) + f'\n{str("<b>─</b>") * 25}\n'
@@ -100,7 +105,7 @@ async def urls_check():
                 connection.execute(last_links_update)
                 connection.commit()
                 await asyncio.sleep(2)
-        await asyncio.sleep(30)
+        await asyncio.sleep(45)
 
 
 @dp.message_handler(commands=['start'])
