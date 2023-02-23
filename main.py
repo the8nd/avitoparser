@@ -11,7 +11,7 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
 from bot_token import token
 from avdbfuncs import urls_base, engine, connection, db_get_all
-from avdbfuncs import urls_check, create_message
+from avdbfuncs import urls_check, create_message, first_check
 
 storage = MemoryStorage()
 bot = Bot(token=token)
@@ -29,7 +29,6 @@ class ClientStatesGroup(StatesGroup):
 
 #move to main and add user id to urls_check call
 async def looped_send_msg(user_id):
-    print('looped')
     while True:
         async for data in urls_check(user_id):
             await bot.send_message(user_id, create_message(data), parse_mode='HTML')
@@ -53,6 +52,7 @@ async def start_command(msg: types.Message):
                      "- Отобразить все URL", reply_markup=start_keyboard)
     logging.info(msg.from_user.username)
     logging.info(msg.from_user.id)
+    url_update = await first_check(msg.from_user.id)
     loop = await looped_send_msg(msg.from_user.id)
 
 
