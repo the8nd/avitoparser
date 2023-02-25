@@ -4,7 +4,7 @@ import asyncio
 
 
 # Парсим ссылку, забираем первые 3 результата.
-async def parser(url):
+async def avparser(url):
     while True:
         request = requests.get(url)
         bs = BeautifulSoup(request.text, "html.parser")
