@@ -25,18 +25,15 @@ async def first_check(user_id):
     first_url_check_f = connection.execute(first_url_check)
     for o, f_url in enumerate(first_url_check_f.fetchall()):
         first_update = await avparser(f_url[0])
-        last_links = ''
-        counter = 0
-        for i in range(3):
-            last_links = last_links + f'{first_update[0][counter]}\m/'
-            counter += 1
+        last_links = '\m/'.join([first_update[0][counter] for counter in range(3)])
         last_links_update = db.update(urls_base).where(urls_base.columns.user_id == user_id,urls_base.columns.url_id == f_url[1]).values(last_urls=last_links)
         connection.execute(last_links_update)
         connection.commit()
 
 
 def db_get_all(user_id):
-    get_all = db.select(urls_base.columns.url_id, urls_base.columns.url, urls_base.columns.url_name, urls_base.columns.status).where(urls_base.columns.user_id==user_id)
+    get_all = db.select(urls_base.columns.url_id, urls_base.columns.url,
+                        urls_base.columns.url_name, urls_base.columns.status).where(urls_base.columns.user_id==user_id)
     get_all_result = connection.execute(get_all)
     final_all = get_all_result.fetchall()
     msg_for_return = ''
@@ -49,34 +46,27 @@ def db_get_all(user_id):
 # 0 - url_name, 1 - url, 2 - last_url, 3 - url_id
 # last_url_unpack, 0, 1, 2 - last url, 3 - url, 4 - url_name
 async def urls_check(user_id: int):
-    url_check = db.select(urls_base.columns.url_name, urls_base.columns.url, urls_base.columns.last_urls, urls_base.columns.url_id).where(urls_base.columns.status == True, urls_base.columns.user_id == user_id)
+    url_check = db.select(urls_base.columns.url_name, urls_base.columns.url, urls_base.columns.last_urls,
+                          urls_base.columns.url_id).where(urls_base.columns.status == True, urls_base.columns.user_id == user_id)
     url_check_f = connection.execute(url_check)
     for j, inf_url in enumerate(url_check_f.fetchall()):
         url_avcheck = await avparser(inf_url[1])
         try:
             last_url_unpack = inf_url[2].split('\m/')
-            last_url_unpack.pop(3)
         except AttributeError:
             logging.info('AttrErr')
         if url_avcheck[0] != last_url_unpack:
             logging.info(f'{user_id} alert {datetime.datetime.now()}')
             last_url_unpack.append(inf_url[1])
             last_url_unpack.append(inf_url[0])
-            # add links names to last_url_unpack
-            last_links = ''
-            counter = 0
-            for i in range(3):
-                last_links = last_links + f'{url_avcheck[0][counter]}\m/'
-                counter += 1
-            last_links_update = db.update(urls_base).where(urls_base.columns.user_id == user_id, urls_base.columns.url_id == inf_url[3]).values(last_urls=last_links)
+            last_links = '\m/'.join([url_avcheck[0][counter] for counter in range(3)])
+            last_links_update = db.update(urls_base).where(urls_base.columns.user_id == user_id,
+                                                           urls_base.columns.url_id == inf_url[3]).values(last_urls=last_links)
             connection.execute(last_links_update)
             connection.commit()
             yield last_url_unpack, url_avcheck[1]
 
 
 def create_message(data) -> str:
-    msg_to_return = ''
-    for i in range(3):
-        msg_to_return = msg_to_return + hlink(data[1][i], data[0][i]) + f'\n{str("<b>─</b>")*25}\n'
-    msg_to_return = msg_to_return + hlink(data[0][4], data[0][3])
+    msg_to_return = ''.join([hlink(data[1][i], data[0][i]) + f'\n{str("<b>─</b>")*25}\n' for i in range(3)])
     return msg_to_return
