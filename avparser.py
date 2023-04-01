@@ -7,6 +7,7 @@ import asyncio
 async def avparser(url):
     while True:
         request = requests.get(url)
+        print(request.status_code)
         bs = BeautifulSoup(request.text, "html.parser")
         links = bs.find_all("a", class_="link-link-MbQDP link-design-default-_nSbv title-root-zZCwT iva-item-title-py3i_ title-listRedesign-_rejR title-root_maxHeight-X6PsH")
         titles = bs.find_all("h3", class_="title-root-zZCwT iva-item-title-py3i_ title-listRedesign-_rejR title-root_maxHeight-X6PsH text-text-LurtD text-size-s-BxGpL text-bold-SinUO")

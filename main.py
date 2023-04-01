@@ -9,8 +9,9 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.dispatcher.filters.state import StatesGroup, State
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters import Text
+from aiogram.utils.exceptions import MessageTextIsEmpty
 from bot_token import token
-from avdbfuncs import urls_base, engine, connection, db_get_all
+from avdbfuncs import urls_base, connection, db_get_all
 from avdbfuncs import urls_check, create_message, first_check
 
 storage = MemoryStorage()
@@ -85,12 +86,17 @@ async def url_adding_finish(msg: types.Message, state: FSMContext):
 
 
 @dp.message_handler(Text(equals='Удалить', ignore_case=True), state=None)
-async def url_delete_start(msg: types.Message):
+async def url_delete_start(msg: types.Message, state: FSMContext):
     await ClientStatesGroup.delete_url.set()
     user_id = msg.from_user.id
     all_urls = db_get_all(user_id)
-    await msg.answer(all_urls, parse_mode='HTML')
-    await msg.answer('Отправь url id, чтобы я удалил его', reply_markup=cancel_keyboard)
+    try:
+        await msg.answer(all_urls, parse_mode='HTML')
+        await msg.answer('Отправь url id, чтобы я удалил его', reply_markup=cancel_keyboard)
+    except MessageTextIsEmpty:
+        await msg.answer('У вас нет добавленных URL')
+        await state.finish()
+
 
 
 @dp.message_handler(state=ClientStatesGroup.delete_url)
@@ -108,16 +114,23 @@ async def url_delete_finish(msg: types.Message, state: FSMContext):
 async def show_all_url(msg: types.Message):
     user_id = msg.from_user.id
     get_info = db_get_all(user_id)
-    await msg.answer(get_info, parse_mode='HTML')
+    try:
+        await msg.answer(get_info, parse_mode='HTML')
+    except MessageTextIsEmpty:
+        await msg.answer('У вас нет добавленных URL')
 
 
 @dp.message_handler(Text(equals='Изменить статус', ignore_case=True), state=None)
-async def status_change_start(msg: types.Message):
+async def status_change_start(msg: types.Message, state: FSMContext):
     await ClientStatesGroup.change_url_status.set()
     user_id = msg.from_user.id
     all_urls = db_get_all(user_id)
-    await msg.answer(all_urls, parse_mode='HTML')
-    await msg.answer('Отправь url id для изменения статуса', reply_markup=cancel_keyboard)
+    try:
+        await msg.answer(all_urls, parse_mode='HTML')
+        await msg.answer('Отправь url id для изменения статуса', reply_markup=cancel_keyboard)
+    except MessageTextIsEmpty:
+        await msg.answer('У вас нет добавленных URL')
+        await state.finish()
 
 
 @dp.message_handler(state=ClientStatesGroup.change_url_status)
