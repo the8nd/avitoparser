@@ -57,8 +57,6 @@ async def urls_check(user_id: int):
             logging.info('AttrErr')
         if url_avcheck[0] != last_url_unpack:
             logging.info(f'{user_id} alert {datetime.datetime.now()}')
-            #print(f'url_avcheck[0]:{url_avcheck[0]}')
-            #print(f'luu before append:{last_url_unpack}')
             url_avcheck[0].append(inf_url[1])
             url_avcheck[0].append(inf_url[0])
             last_links = '\m/'.join([url_avcheck[0][counter] for counter in range(3)])
@@ -66,12 +64,11 @@ async def urls_check(user_id: int):
                                                            urls_base.columns.url_id == inf_url[3]).values(last_urls=last_links)
             connection.execute(last_links_update)
             connection.commit()
-            yield url_avcheck[0], url_avcheck[1]
+            yield url_avcheck[0], url_avcheck[1], url_avcheck[2]
 
 
 def create_message(data) -> str:
-    msg_to_return = ''.join([hlink(data[1][i], data[0][i]) + f'\n{str(f"<b>{spacer_creater()}</b>")}\n' for i in range(3)] + [hlink(data[0][4], data[0][3])])
-    print(msg_to_return)
+    msg_to_return = ''.join([hlink(data[1][i], data[0][i]) + f' | {data[2][i]}\n{str(f"<b>{spacer_creater()}</b>")}\n' for i in range(3)] + [hlink(data[0][4], data[0][3])])
     return msg_to_return
 
 
