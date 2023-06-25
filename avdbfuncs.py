@@ -26,7 +26,7 @@ async def first_check(user_id):
     for o, f_url in enumerate(first_url_check_f.fetchall()):
         first_update = await avparser(f_url[0])
         last_links = '\m/'.join([first_update[0][counter] for counter in range(3)])
-        last_links_update = db.update(urls_base).where(urls_base.columns.user_id == user_id,urls_base.columns.url_id == f_url[1]).values(last_urls=last_links)
+        last_links_update = db.update(urls_base).where(urls_base.columns.user_id == user_id, urls_base.columns.url_id == f_url[1]).values(last_urls=last_links)
         connection.execute(last_links_update)
         connection.commit()
 
